@@ -34,14 +34,4 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log("Server started on port " + PORT);
 });
-// Добавьте это в ваш proxy.js на сервере Render
-app.use('/bytedance', createProxyMiddleware({
-    target: 'https://cv-api.bytedance.com', // или другой эндпоинт API ByteDance
-    changeOrigin: true,
-    pathRewrite: { '^/bytedance': '' },
-    onProxyReq: (proxyReq, req, res) => {
-        if (req.headers.authorization) {
-            proxyReq.setHeader('Authorization', req.headers.authorization);
-        }
-    }
-}));
+
