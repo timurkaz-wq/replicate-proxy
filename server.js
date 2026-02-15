@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import Replicate from "replicate";
+import { createProxyMiddleware } from "http-proxy-middleware";
 
 const app = express();
 app.use(cors());
@@ -10,10 +11,16 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
+//
+// 🔹 Проверка сервера
+//
 app.get("/", (req, res) => {
   res.send("Replicate proxy is running");
 });
 
+//
+// 🔹 Генерация через Replicate
+//
 app.post("/generate", async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -30,19 +37,28 @@ app.post("/generate", async (req, res) => {
   }
 });
 
+//
+// 🔹 Прокси к ByteDance API
+//
+app.use(
+  "/bytedance",
+  createProxyMiddleware({
+    target: "https://cv-api.bytedance.com",
+    changeOrigin: true,
+    pathRewrite: { "^/bytedance": "" },
+    onProxyReq: (proxyReq, req) => {
+      if (req.headers.authorization) {
+        proxyReq.setHeader("Authorization", req.headers.authorization);
+      }
+    },
+  })
+);
+
+//
+// 🔹 Запуск сервера
+//
 const PORT = process.env.PORT || 10000;
+
 app.listen(PORT, () => {
   console.log("Server started on port " + PORT);
 });
-
-// Добавьте это в ваш proxy.js на сервере Render
-app.use('/bytedance', createProxyMiddleware({
-    target: 'https://cv-api.bytedance.com', // или другой эндпоинт API ByteDance
-    changeOrigin: true,
-    pathRewrite: { '^/bytedance': '' },
-    onProxyReq: (proxyReq, req, res) => {
-        if (req.headers.authorization) {
-            proxyReq.setHeader('Authorization', req.headers.authorization);
-        }
-    }
-}));
