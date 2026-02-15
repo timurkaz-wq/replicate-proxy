@@ -1,0 +1,9 @@
+{
+  "name": "replicate-proxy",
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "replicate": "^0.29.0"
+  }
+}
